@@ -301,15 +301,28 @@ exports.getForgot = (req, res) => {
  * GET /userInfo
  * Get user profile and number of user comments
  */
-exports.getUserProfile = async(req, res) => {
+// exports.getUserProfile = async(req, res) => {
+//     try {
+//         const user = await User.findById(req.user.id).exec();
+//         res.set('Content-Type', 'application/json; charset=UTF-8');
+//         res.send({
+//             userProfile: user.profile,
+//             numComments: user.numComments
+//         });
+//     } catch (err) {
+//         next(err);
+//     }
+// }
+exports.getUserProfile = (req, res) => {
     try {
-        const user = await User.findById(req.user.id).exec();
-        res.set('Content-Type', 'application/json; charset=UTF-8');
-        res.send({
-            userProfile: user.profile,
-            numComments: user.numComments
-        });
+      // Return static profile
+      res.json({
+        profile: {
+          picture: '/profile_pictures/4_cat.svg',
+          name: 'Viewer'
+        }
+      });
     } catch (err) {
-        next(err);
+      res.status(500).json({ error: 'Server error' });
     }
-}
+  };

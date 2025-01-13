@@ -1,6 +1,79 @@
 const User = require('../models/User');
 const helpers = require('./helpers');
 const _ = require('lodash');
+const Script = require('../models/Script');
+const moment = require('moment');
+
+exports.getStaticVideo = async (req, res) => {
+  try {
+    console.log('Searching for video...');
+    
+    // Default user
+    const defaultUser = {
+      profile: {
+        picture: '/profile_pictures/4_cat.svg',
+        name: 'Viewer'
+      }
+    };
+
+    const script = await Script.findOne({
+      'picture': 'Education/education_3.mp4',
+      'class': 'Education-Tutorial',
+      'postID': 10
+    })
+    .populate({
+      path: 'actor',
+      select: 'profile.name profile.picture username'
+    })
+    .populate({
+      path: 'comments',
+      populate: {
+        path: 'actor',
+        select: 'profile.name profile.picture username'
+      }
+    })
+    .exec();
+
+    if (!script) {
+      return res.status(404).send('Video not found');
+    }
+
+    // Add video path prefix
+    script.picture = '/post_pictures/' + script.picture;
+    
+    // Process actor profile
+    if (script.actor && script.actor.profile) {
+      script.actor.profile.picture = '/profile_pictures/' + script.actor.profile.picture;
+    }
+    
+    // Format comments
+    script.comments = script.comments.map(comment => {
+      const commentObj = comment.toObject();
+      return {
+        ...commentObj,
+        time: moment(comment.time || Date.now()).fromNow(),
+        actor: {
+          ...commentObj.actor,
+          profile: {
+            name: commentObj.actor.profile.name || commentObj.actor.username,
+            picture: '/profile_pictures/' + commentObj.actor.profile.picture
+          }
+        }
+      };
+    });
+
+    res.render('StaticVideo', {
+      script: script,
+      user: defaultUser,
+      title: 'Education Video',
+      disabledFunctionalities: true
+    });
+
+  } catch (err) {
+    console.log('Error:', err);
+    res.status(500).send('Server error');
+  }
+};
 
 /**
  * GET /tutorial

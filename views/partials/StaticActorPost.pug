@@ -1,0 +1,61 @@
+.ui.fluid.card(postID=script.postID, index=script.postID, postClass=script.class)
+  .content.title
+    h2 !{script.body}
+  .content
+    .ui.two.column.grid.stackable
+      .five.wide.column.centered
+        video(src=script.picture controls controlsList="nofullscreen" poster type='video/mp4')
+        .content.buttons
+          .ui.buttons.small
+            .ui.left.labeled.button.disabled
+              a.ui.basic.green.right.pointing.label #{script.likes || 0}
+              .ui.like.button(tabindex='0', data-tooltip="I like this", data-position="bottom center", data-variation="mini")
+                i.thumbs.up.icon
+                | Upvote
+            .ui.right.labeled.button.disabled
+              .ui.unlike.button(tabindex='0', data-tooltip="I dislike this", data-position="bottom center", data-variation="mini")
+                i.thumbs.down.icon
+                | Downvote
+              a.ui.basic.red.left.pointing.label #{script.unlikes || 0}
+          .secondary-buttons
+            .ui.flag.button.small.disabled(tabindex='0', data-tooltip="Report Video", data-position="top center", data-variation="mini")
+              i.flag.icon
+              | Flag
+      .eleven.wide.column.centered
+        h3 Comments
+        .ui.divider(style="margin:0px;")
+        .ui.form
+          .inline.field
+            .image
+              img.ui.image.rounded(src=user.profile.picture)
+            textarea.replyToVideo(
+              name='replyToVideo' 
+              type='text' 
+              placeholder='Add a Comment...' 
+              rows='1' 
+              disabled=true
+            )
+            i.big.send.link.icon.replyToVideo.disabled
+        h4(style="text-align: right; color: gray;") Sort by: Newest First
+        .ui.comments
+          each comment in script.comments
+            .comment
+              .image
+                a.avatar
+                  img(src=comment.actor.profile.picture)
+              .content
+                a.author #{comment.actor.profile.name}
+                .text #{comment.body}
+                .actions
+                  a.like.disabled
+                    i.thumbs.up.icon
+                    | #{comment.likes || 0}
+                  a.unlike.disabled
+                    i.thumbs.down.icon
+                    | #{comment.unlikes || 0}
+                  a.reply.disabled
+                    i.reply.icon
+                    | Reply
+                  a.flag.disabled
+                    i.flag.icon
+                    | Flag
