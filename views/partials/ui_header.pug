@@ -6,8 +6,8 @@
       if user
         .right.menu
           .ui.simple.dropdown.item
-            .image
-              img.ui.image.rounded(src=user.profile.picture)
+            .image(style="min-width: 3em; max-width: 3em; min-height: 3em; max-height: 3em; margin: 0.2em 0.2em 0 0; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: 50%;")
+              img.ui.image.rounded(src=user.profile.picture style="width: 70%; height: 70%; object-fit: cover; border-radius: 50%;")
             span(style="margin-right: 5px;")= user.username
 .mobile.only.row
   .ui.fluid.top.fixed.four.item.menu
