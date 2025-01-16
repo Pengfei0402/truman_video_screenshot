@@ -6,73 +6,97 @@ const moment = require('moment');
 
 exports.getStaticVideo = async (req, res) => {
     try {
-      console.log('Searching for video...');
-      
-      const defaultUser = {
-        profile: {
-          picture: '/profile_pictures/human.png',
-          name: 'Viewer'
-        }
-      };
-  
-      const script = await Script.findOne({
-        'picture': 'Education/education_3.mp4',
-        'class': 'Education',
-        'postID': 0
-      })
-      .populate({
-        path: 'actor',
-        select: 'username profile.name profile.picture profile.color'
-      })
-      .populate({
-        path: 'comments',
-        populate: {
-          path: 'actor',
-          select: 'username profile.name profile.picture profile.color'
-        }
-      })
-      .exec();
-  
-      if (!script) {
-        console.log('Video not found');
-        return res.status(404).send('Video not found');
-      }
-  
-      // Add video path prefix
-      script.picture = '/post_pictures/' + script.picture;
-      
-      // Process comments with null check
-      if (script.comments && script.comments.length > 0) {
-        script.comments = script.comments.map(comment => {
-          const commentObj = comment.toObject();
-          return {
-            ...commentObj,
-            actor: {
-              ...commentObj.actor,
-              profile: {
-                name: commentObj.actor?.profile?.name || commentObj.actor?.username || 'Anonymous',
-                picture: '/profile_pictures/' + (commentObj.actor?.profile?.picture || 'human.png'),
-                color: commentObj.actor?.profile?.color || '#f0f0f0'
-              }
+        const defaultUser = {
+            profile: {
+                picture: '/profile_pictures/human.png',
+                name: 'Viewer',
+                color: '#f0f0f0'
             }
-          };
+        };
+
+        const script = await Script.findOne({
+            'picture': 'Education/education_3.mp4',
+            'class': 'Education',
+            'postID': 0
+        })
+        .populate({
+            path: 'actor',
+            select: 'username profile.name profile.picture profile.color'
+        })
+        .populate({
+            path: 'comments',
+            options: { sort: { 'time': -1 } },
+            populate: [{
+                path: 'actor',
+                select: 'username profile.name profile.picture profile.color'
+            }, {
+                path: 'subcomments',
+                populate: {
+                    path: 'actor',
+                    select: 'username profile.name profile.picture profile.color'
+                }
+            }]
+        })
+        .lean()
+        .exec();
+
+        // Fix video path
+        script.picture = '/post_pictures/' + script.picture;
+
+        // Debug logging
+        console.log('Comments:', JSON.stringify(script.comments.map(c => ({
+            id: c.commentID,
+            hasReplies: Boolean(c.subcomments?.length),
+            replyCount: c.subcomments?.length || 0,
+            body: c.body?.substring(0, 30)
+        })), null, 2));
+
+        // Process comments with proper actor data for subcomments
+        if (script.comments?.length > 0) {
+            script.comments = script.comments.map(comment => ({
+                ...comment,
+                actor: processActor(comment.actor),
+                subcomments: (comment.subcomments || []).map(sub => ({
+                    ...sub,
+                    actor: processActor(sub.actor)
+                }))
+            }));
+        }
+
+        // Helper function to process actor data
+        function processActor(actor) {
+            return {
+                ...actor,
+                profile: {
+                    name: actor?.profile?.name || actor?.username,
+                    picture: '/profile_pictures/' + (actor?.profile?.picture || 'human.png'),
+                    color: actor?.profile?.color || '#f0f0f0'
+                }
+            };
+        }
+
+        // After comment processing:
+        console.log('Processed Comments:', JSON.stringify(script.comments.map(c => ({
+            id: c.commentID,
+            body: c.body?.substring(0, 30),
+            subcomments: c.subcomments?.map(s => ({
+                id: s.commentID,
+                body: s.body?.substring(0, 30)
+            }))
+        })), null, 2));
+
+        res.render('StaticVideo', {
+            script,
+            user: defaultUser,
+            title: 'Education Video',
+            disabledFunctionalities: true
         });
-      } else {
-        script.comments = [];
-      }
-  
-      res.render('StaticVideo', {
-        script: script,
-        user: defaultUser,
-        title: 'Education Video',
-        disabledFunctionalities: true
-      });
-  
+
     } catch (err) {
-      console.log('Error:', err);
-      res.status(500).send('Server error');
+        console.error('Error:', err);
+        res.status(500).send('Server error');
     }
-  };
+};
 
 /**
  * GET /tutorial
@@ -96,7 +120,7 @@ exports.getScriptTutorial = async(req, res, next) => {
 
         script_feed = await helpers.getTutorial(user);
 
-        res.render('script', { script: script_feed, title: 'Feed', disabledFunctionalitiies: true });
+        res.render('script', { script: script_feed, title: 'Feed', disabledFunctionalities: true });
     } catch (err) {
         next(err);
     }

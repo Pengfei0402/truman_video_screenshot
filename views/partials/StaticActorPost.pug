@@ -36,7 +36,7 @@
               disabled=true
             )
             i.big.send.link.icon.replyToVideo.disabled
-        h4(style="text-align: right; color: gray;") Sort by: Newest First
+
         .ui.comments
           each comment in script.comments
             .comment
@@ -53,9 +53,25 @@
                   a.unlike.disabled
                     i.thumbs.down.icon
                     | #{comment.unlikes || 0}
-                  a.reply.disabled
-                    i.reply.icon
-                    | Reply
-                  a.flag.disabled
-                    i.flag.icon
-                    | Flag
+                  a.flag.disabled Flag
+                  a.reply.disabled Reply
+
+                if comment.subcomments && comment.subcomments.length > 0
+                  .comments
+                    each reply in comment.subcomments
+                      .comment
+                        .image(style="background-color:" + reply.actor.profile.color + ";")
+                          a.avatar
+                            img(src=reply.actor.profile.picture)
+                        .content
+                          a.author #{reply.actor.profile.name}
+                          .text #{reply.body}
+                          .actions
+                            a.like.disabled
+                              i.thumbs.up.icon
+                              | #{reply.likes || 0}
+                            a.unlike.disabled
+                              i.thumbs.down.icon
+                              | #{reply.unlikes || 0}
+                            a.flag.disabled Flag
+                            a.reply.disabled Reply

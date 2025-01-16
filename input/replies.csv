@@ -1,11 +1,11 @@
-id,body,actor,reply,likes,dislikes,time,class
-0,So basically it’s the chance that it rains on you specifically.,wh092,0,,,-0:29,
-1,this is why i bring my umbrella 100% of the time i go out. i dont go out without my bag anyway 😂,qq753,0,,,-0:48,
-2,i love risk of rain,dj293,0,,,-1:49,
-3,"LOL, did you even preview this before sharing? No one is interested in this crap. Save your time and ours!",pd881,0,1,1,-2:39,offense
-4,"Everyone deserves a little respect, even if you don’t like their post. Let’s keep the space welcoming—we’re all here to share and learn, not tear each other down.",op231,0,1,1,-0:07,0
-5,"Criticism is fine, but calling someone’s effort ‘crap’ isn’t respectful. Let’s treat others the way we’d want to be treated.",op231,0,1,1,-0:07,1
-6,Words like these tear people down instead of building them up. Let’s strive for a community where everyone feels safe to share and contribute.,op231,0,1,1,-0:07,2
-7,Imagine how the person who shared this might feel reading your comment. It could really hurt to have their effort dismissed like that.,op231,0,1,1,-0:07,3
-8,"This kind of comment might make the poster feel embarrassed or discouraged. Think about how hard it can be to share something, only to get a response like this.",op231,0,1,1,-0:07,4
-9,Your words might sting for the person behind this post. Imagine putting effort into something and having it dismissed so harshly—it can feel pretty crushing.,op231,0,1,1,-0:07,5
+id,body,actor,reply,likes,dislikes,time,replyTo,class
+0,So basically it’s the chance that it rains on you specifically.,wh092,0,,,-0:29,,
+1,this is why i bring my umbrella 100% of the time i go out. i dont go out without my bag anyway 😂,qq753,0,,,-0:48,,
+2,i love risk of rain,dj293,0,,,-0:48,,
+3,"LOL, did you even preview this before sharing? No one is interested in this crap. Save your time and ours!",pd881,0,1,1,-0:48,,offense
+4,"Everyone deserves a little respect, even if you don’t like their post. Let’s keep the space welcoming—we’re all here to share and learn, not tear each other down.",op231,0,1,1,-0:07,3,0
+5,"Criticism is fine, but calling someone’s effort ‘crap’ isn’t respectful. Let’s treat others the way we’d want to be treated.",op231,0,1,1,-0:07,3,1
+6,Words like these tear people down instead of building them up. Let’s strive for a community where everyone feels safe to share and contribute.,op231,0,1,1,-0:07,3,2
+7,Imagine how the person who shared this might feel reading your comment. It could really hurt to have their effort dismissed like that.,op231,0,1,1,-0:07,3,3
+8,"This kind of comment might make the poster feel embarrassed or discouraged. Think about how hard it can be to share something, only to get a response like this.",op231,0,1,1,-0:07,3,4
+9,Your words might sting for the person behind this post. Imagine putting effort into something and having it dismissed so harshly—it can feel pretty crushing.,op231,0,1,1,-0:07,3,5
