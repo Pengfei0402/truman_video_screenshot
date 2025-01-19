@@ -40,6 +40,53 @@ exports.getStaticVideo = async (req, res) => {
         .lean()
         .exec();
 
+        // Get URL parameters
+        const moParam = req.query.mo;
+        const emParam = req.query.em;
+        const speakerParam = req.query.speaker;
+
+        // Map parameters to class values
+        let targetClass;
+        if (moParam) {
+            targetClass = parseInt(moParam) - 1; // mo=1,2,3 maps to class=0,1,2
+        } else if (emParam) {
+            targetClass = parseInt(emParam) + 2; // em=1,2,3 maps to class=3,4,5
+        }
+
+        // Filter and modify comments based on class and speaker
+        if (script.comments?.length > 0) {
+            script.comments = script.comments.map(comment => {
+                if (comment.commentID === 1) {
+                    const filteredSubcomments = comment.subcomments.filter(sub => 
+                        sub.class === targetClass.toString()
+                    );
+
+                    // Modify actor details based on speaker parameter
+                    if (speakerParam === '2') {
+                        filteredSubcomments.forEach(sub => {
+                            if (sub.actor.username === 'op231') {
+                                sub.actor.username = 'Vira';
+                                sub.actor.profile.name = 'Vira';
+                                sub.actor.profile.picture = 'ai.png';
+                            }
+                        });
+                    } else if (speakerParam === '3') {
+                        filteredSubcomments.forEach(sub => {
+                            if (sub.actor.username === 'op231') {
+                                sub.actor.assistedLabel = 'Assisted by Vira';
+                            }
+                        });
+                    }
+
+                    return {
+                        ...comment,
+                        subcomments: filteredSubcomments
+                    };
+                }
+                return comment;
+            });
+        }
+
         // Fix video path
         script.picture = '/post_pictures/' + script.picture;
 

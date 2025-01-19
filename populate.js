@@ -225,90 +225,66 @@ async function processReplies() {
             const parentComments = processParentComments(comment_list);
             const childComments = processChildComments(comment_list);
             
-            console.log(`Processing ${parentComments.length} parents and ${childComments.length} replies`);
+            // Process parents first
+            for (const reply of parentComments) {
+                const script = await Script.findOne({ postID: reply.reply });
+                if (!script) continue;
 
-            // Add timeout for operations
-            const timeout = setTimeout(() => {
-                reject(new Error('Comment processing timeout after 30s'));
-            }, 30000);
+                const act = await Actor.findOne({ username: reply.actor });
+                if (!act) continue;
 
-            try {
-                // Process parents
-                for (const reply of parentComments) {
-                    const script = await Script.findOne({ postID: reply.reply });
-                    if (!script) {
-                        console.log(color_error, `Script not found for parent ${reply.id}`);
-                        continue;
-                    }
+                const comment = {
+                    commentID: reply.id,
+                    body: reply.body,
+                    likes: reply.likes || 0,
+                    unlikes: reply.dislikes || 0,
+                    actor: act._id,
+                    time: timeStringToNum(reply.time),
+                    class: reply.class,
+                    subcomments: []
+                };
 
-                    const act = await Actor.findOne({ username: reply.actor });
-                    if (!act) {
-                        console.log(color_error, `Actor not found for parent ${reply.id}`);
-                        continue;
-                    }
-
-                    console.log(`Processing parent ${reply.id}...`);
-                    const comment = {
-                        commentID: reply.id,
-                        body: reply.body,
-                        likes: reply.likes || 0,
-                        unlikes: reply.dislikes || 0,
-                        actor: act._id,
-                        time: timeStringToNum(reply.time),
-                        class: reply.class,
-                        subcomments: []
-                    };
-
-                    script.comments.push(comment);
-                    processedComments.set(reply.id, script);
-                    await script.save();
-                    console.log(color_success, `Saved parent ${reply.id}`);
-                }
-
-                // Process children with progress tracking
-                let processedCount = 0;
-                for (const reply of childComments) {
-                    console.log(`Processing reply ${reply.id} (${++processedCount}/${childComments.length})`);
-                    const parentScript = processedComments.get(reply.replyTo);
-                    if (!parentScript) {
-                        console.log(color_error, `Parent script not found for reply ${reply.id}`);
-                        continue;
-                    }
-
-                    const act = await Actor.findOne({ username: reply.actor });
-                    if (!act) {
-                        console.log(color_error, `Actor not found for reply ${reply.id}`);
-                        continue;
-                    }
-
-                    const parentComment = parentScript.comments.find(c => c.commentID === parseInt(reply.replyTo));
-                    if (!parentComment) {
-                        console.log(color_error, `Parent comment not found for reply ${reply.id}`);
-                        continue;
-                    }
-
-                    const childComment = {
-                        commentID: reply.id,
-                        body: reply.body,
-                        likes: reply.likes || 0,
-                        unlikes: reply.dislikes || 0,
-                        actor: act._id,
-                        time: timeStringToNum(reply.time),
-                        class: reply.class,
-                        replyTo: reply.replyTo
-                    };
-
-                    parentComment.subcomments.push(childComment);
-                    await parentScript.save();
-                    console.log(color_success, `Saved reply ${reply.id}`);
-                }
-
-                clearTimeout(timeout);
-                resolve('Comments populated successfully');
-            } catch (err) {
-                clearTimeout(timeout);
-                throw err;
+                script.comments.push(comment);
+                await Script.findOneAndUpdate(
+                    { _id: script._id },
+                    { $set: { comments: script.comments } },
+                    { new: true }
+                );
+                console.log(`Added parent ${reply.id}`);
             }
+
+            // Then process children
+            for (const reply of childComments) {
+                const script = await Script.findOne({ postID: reply.reply });
+                if (!script) continue;
+
+                const act = await Actor.findOne({ username: reply.actor });
+                if (!act) continue;
+
+                const parentComment = script.comments.find(c => c.commentID === parseInt(reply.replyTo));
+                if (!parentComment) continue;
+
+                const childComment = {
+                    commentID: reply.id,
+                    body: reply.body,
+                    likes: reply.likes || 0,
+                    unlikes: reply.dislikes || 0,
+                    actor: act._id,
+                    time: timeStringToNum(reply.time),
+                    class: reply.class,
+                    replyTo: reply.replyTo
+                };
+
+                parentComment.subcomments.push(childComment);
+                await Script.findOneAndUpdate(
+                    { _id: script._id },
+                    { $set: { comments: script.comments } },
+                    { new: true }
+                );
+                console.log(`Added reply ${reply.id} to ${reply.replyTo}`);
+            }
+
+            resolve('Comments populated successfully');
         } catch (err) {
             console.error('Error processing replies:', err);
             reject(err);

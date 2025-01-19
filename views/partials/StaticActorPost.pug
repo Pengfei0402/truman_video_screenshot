@@ -37,7 +37,7 @@
             )
             i.big.send.link.icon.replyToVideo.disabled
 
-        .ui.comments
+        .ui.comments(style="margin-bottom: 1em;")
           each comment in script.comments
             .comment
               .image(style="background-color:" + comment.actor.profile.color + ";")
@@ -57,14 +57,18 @@
                   a.reply.disabled Reply
 
                 if comment.subcomments && comment.subcomments.length > 0
-                  .comments
+                  .comments(style="margin-bottom: 0;")
                     each reply in comment.subcomments
-                      .comment
+                      .comment(style="margin: 0.5em 0;")
                         .image(style="background-color:" + reply.actor.profile.color + ";")
                           a.avatar
                             img(src=reply.actor.profile.picture)
                         .content
                           a.author #{reply.actor.profile.name}
+                          if reply.actor.assistedLabel
+                            span.assisted-label(style="margin-left: 0.5em; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; color: #666; font-size: 0.9em; display: inline-flex; align-items: center;")
+                              | This message was assisted by Vira
+                              img(src="/profile_pictures/ai.png" style="height: 1em; margin-left: 4px; vertical-align: middle;")
                           .text #{reply.body}
                           .actions
                             a.like.disabled
