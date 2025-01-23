@@ -2,7 +2,6 @@ const User = require('../models/User');
 const helpers = require('./helpers');
 const _ = require('lodash');
 const Script = require('../models/Script');
-const moment = require('moment');
 
 exports.getStaticVideo = async (req, res) => {
     try {
@@ -15,30 +14,14 @@ exports.getStaticVideo = async (req, res) => {
         };
 
         const script = await Script.findOne({
-            'picture': 'Education/education_3.mp4',
-            'class': 'Education',
             'postID': 0
-        })
-        .populate({
-            path: 'actor',
-            select: 'username profile.name profile.picture profile.color'
-        })
-        .populate({
-            path: 'comments',
-            options: { sort: { 'time': -1 } },
-            populate: [{
-                path: 'actor',
-                select: 'username profile.name profile.picture profile.color'
-            }, {
-                path: 'subcomments',
-                populate: {
-                    path: 'actor',
-                    select: 'username profile.name profile.picture profile.color'
-                }
-            }]
-        })
-        .lean()
-        .exec();
+            })
+             .populate('actor')
+             .populate('comments.actor')
+             .populate('comments.subcomments.actor')
+             .sort('-time')
+            .lean()
+            .exec();
 
         // Get URL parameters
         const moParam = req.query.mo;
@@ -65,8 +48,8 @@ exports.getStaticVideo = async (req, res) => {
                     if (speakerParam === '2') {
                         filteredSubcomments.forEach(sub => {
                             if (sub.actor.username === 'op231') {
-                                sub.actor.username = 'Vira';
-                                sub.actor.profile.name = 'Vira';
+                                sub.actor.username = 'Vira (AI Assistant)';
+                                sub.actor.profile.name = 'Vira (AI Assistant)';
                                 sub.actor.profile.picture = 'ai.png';
                             }
                         });
