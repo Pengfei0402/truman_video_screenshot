@@ -1,7 +1,7 @@
 .ui.fluid.card(postID=script.postID, index=script.postID, postClass=script.class)
   .content.title
     h2 !{script.body}
-  .content
+  .content.body
     .ui.two.column.grid.stackable
       .five.wide.column.centered
         video(src=script.picture controls controlsList="nofullscreen" poster type='video/mp4')
@@ -26,8 +26,8 @@
         .ui.divider(style="margin:0px;")
         .ui.form
           .inline.field
-            .image(style="min-width: 3em; max-width: 3em; min-height: 3em; max-height: 3em; margin: 0.2em 0.2em 0 0; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: 50%;")
-              img.ui.image.rounded(src=user.profile.picture style="width: 70%; height: 70%; object-fit: cover; border-radius: 50%;")
+            .image
+              img.ui.image.rounded(src=user.profile.picture)
             textarea.replyToVideo(
               name='replyToVideo' 
               type='text' 
@@ -36,46 +36,45 @@
               disabled=true
             )
             i.big.send.link.icon.replyToVideo.disabled
-
-        .ui.comments(style="margin-bottom: 1em;")
-          each comment in script.comments
-            .comment
-              .image(style="background-color:" + comment.actor.profile.color + ";")
-                a.avatar
-                  img(src=comment.actor.profile.picture)
-              .content
-                a.author #{comment.actor.profile.name}
-                .text #{comment.body}
-                .actions
-                  a.like.disabled
-                    i.thumbs.up.icon
-                    | #{comment.likes || 0}
-                  a.unlike.disabled
-                    i.thumbs.down.icon
-                    | #{comment.unlikes || 0}
-                  a.flag.disabled Flag
-                  a.reply.disabled Reply
-
-                if comment.subcomments && comment.subcomments.length > 0
-                  .comments(style="margin-bottom: 0;")
-                    each reply in comment.subcomments
-                      .comment(style="margin: 0.5em 0;")
-                        .image(style="background-color:" + reply.actor.profile.color + ";")
-                          a.avatar
-                            img(src=reply.actor.profile.picture)
-                        .content
-                          a.author #{reply.actor.profile.name}
-                          if reply.actor.assistedLabel
-                            span.assisted-label(style="margin-left: 0.5em; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; color: #666; font-size: 0.9em; display: inline-flex; align-items: center;")
-                              | This message was assisted by Vira
-                              img(src="/profile_pictures/ai.png" style="height: 1em; margin-left: 4px; vertical-align: middle;")
-                          .text #{reply.body}
-                          .actions
-                            a.like.disabled
-                              i.thumbs.up.icon
-                              | #{reply.likes || 0}
-                            a.unlike.disabled
-                              i.thumbs.down.icon
-                              | #{reply.unlikes || 0}
-                            a.flag.disabled Flag
-                            a.reply.disabled Reply
+        .comments-wrapper
+          .ui.comments
+            each comment in script.comments
+              .comment
+                .image(style="background-color:" + comment.actor.profile.color + ";")
+                  a.avatar
+                    img(src=comment.actor.profile.picture)
+                .content
+                  a.author #{comment.actor.profile.name}
+                  .text #{comment.body}
+                  .actions
+                    a.like.disabled
+                      i.thumbs.up.icon
+                      | #{comment.likes || 0}
+                    a.unlike.disabled
+                      i.thumbs.down.icon
+                      | #{comment.unlikes || 0}
+                    a.flag.disabled Flag
+                    a.reply.disabled Reply
+                  if comment.subcomments && comment.subcomments.length > 0
+                    .comments(style="margin-bottom: 0;")
+                      each reply in comment.subcomments
+                        .comment(style="margin: 0.5em 0;")
+                          .image(style="background-color:" + reply.actor.profile.color + ";")
+                            a.avatar
+                              img(src=reply.actor.profile.picture)
+                          .content
+                            a.author #{reply.actor.profile.name}
+                            if reply.actor.assistedLabel
+                              span.assisted-label(style="margin-left: 0.5em; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; color: #666; font-size: 0.9em; display: inline-flex; align-items: center;")
+                                | This message was assisted by Vira
+                                img(src="/profile_pictures/ai.png" style="height: 1em; margin-left: 4px; vertical-align: middle;")
+                            .text #{reply.body}
+                            .actions
+                              a.like.disabled
+                                i.thumbs.up.icon
+                                | #{reply.likes || 0}
+                              a.unlike.disabled
+                                i.thumbs.down.icon
+                                | #{reply.unlikes || 0}
+                              a.flag.disabled Flag
+                              a.reply.disabled Reply

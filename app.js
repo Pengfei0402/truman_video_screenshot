@@ -144,14 +144,6 @@ app.get('/userProfile', userController.getUserProfile);
 
 app.get('/staticvideo', scriptController.getStaticVideo);
 
-// Authentication middleware
-app.use((req, res, next) => {
-  if (!req.path.startsWith('/staticvideo') && !req.isAuthenticated() && req.path !== '/login' && req.path !== '/signup') {
-    return res.redirect('/signup');
-  }
-  next();
-});
-
 /**
  * Error Handler.
  */

@@ -2,9 +2,8 @@ const User = require('../models/User');
 const helpers = require('./helpers');
 const _ = require('lodash');
 const Script = require('../models/Script');
-const moment = require('moment');
 
-exports.getStaticVideo = async (req, res) => {
+exports.getStaticVideo = async(req, res) => {
     try {
         const defaultUser = {
             profile: {
@@ -15,49 +14,27 @@ exports.getStaticVideo = async (req, res) => {
         };
 
         const script = await Script.findOne({
-            'picture': 'Education/education_3.mp4',
-            'class': 'Education',
-            'postID': 0
-        })
-        .populate({
-            path: 'actor',
-            select: 'username profile.name profile.picture profile.color'
-        })
-        .populate({
-            path: 'comments',
-            options: { sort: { 'time': -1 } },
-            populate: [{
-                path: 'actor',
-                select: 'username profile.name profile.picture profile.color'
-            }, {
-                path: 'subcomments',
-                populate: {
-                    path: 'actor',
-                    select: 'username profile.name profile.picture profile.color'
-                }
-            }]
-        })
-        .lean()
-        .exec();
+                'postID': 0
+            })
+            .populate('actor')
+            .populate('comments.actor')
+            .populate('comments.subcomments.actor')
+            .sort('-time')
+            .lean()
+            .exec();
 
         // Get URL parameters
-        const moParam = req.query.mo;
-        const emParam = req.query.em;
+        const mParam = req.query.m;
         const speakerParam = req.query.speaker;
 
         // Map parameters to class values
-        let targetClass;
-        if (moParam) {
-            targetClass = parseInt(moParam) - 1; // mo=1,2,3 maps to class=0,1,2
-        } else if (emParam) {
-            targetClass = parseInt(emParam) + 2; // em=1,2,3 maps to class=3,4,5
-        }
+        let targetClass = mParam ? parseInt(mParam) - 1 : 0; // m=1,2,3,4,5 maps to class=0,1,2,3,4
 
         // Filter and modify comments based on class and speaker
-        if (script.comments?.length > 0) {
+        if (script.comments.length > 0) {
             script.comments = script.comments.map(comment => {
                 if (comment.commentID === 1) {
-                    const filteredSubcomments = comment.subcomments.filter(sub => 
+                    const filteredSubcomments = comment.subcomments.filter(sub =>
                         sub.class === targetClass.toString()
                     );
 
@@ -93,13 +70,13 @@ exports.getStaticVideo = async (req, res) => {
         // Debug logging
         console.log('Comments:', JSON.stringify(script.comments.map(c => ({
             id: c.commentID,
-            hasReplies: Boolean(c.subcomments?.length),
-            replyCount: c.subcomments?.length || 0,
-            body: c.body?.substring(0, 30)
+            hasReplies: Boolean(c.subcomments.length),
+            replyCount: c.subcomments.length || 0,
+            body: c.body.substring(0, 30)
         })), null, 2));
 
         // Process comments with proper actor data for subcomments
-        if (script.comments?.length > 0) {
+        if (script.comments.length > 0) {
             script.comments = script.comments.map(comment => ({
                 ...comment,
                 actor: processActor(comment.actor),
@@ -115,9 +92,9 @@ exports.getStaticVideo = async (req, res) => {
             return {
                 ...actor,
                 profile: {
-                    name: actor?.profile?.name || actor?.username,
-                    picture: '/profile_pictures/' + (actor?.profile?.picture || 'human.png'),
-                    color: actor?.profile?.color || '#f0f0f0'
+                    name: actor.profile.name || actor.username,
+                    picture: '/profile_pictures/' + (actor.profile.picture || 'human.png'),
+                    color: actor.profile.color || '#f0f0f0'
                 }
             };
         }
@@ -125,10 +102,10 @@ exports.getStaticVideo = async (req, res) => {
         // After comment processing:
         console.log('Processed Comments:', JSON.stringify(script.comments.map(c => ({
             id: c.commentID,
-            body: c.body?.substring(0, 30),
-            subcomments: c.subcomments?.map(s => ({
+            body: c.body.substring(0, 30),
+            subcomments: c.subcomments.map(s => ({
                 id: s.commentID,
-                body: s.body?.substring(0, 30)
+                body: s.body.substring(0, 30)
             }))
         })), null, 2));
 

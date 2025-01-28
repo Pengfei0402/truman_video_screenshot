@@ -12,15 +12,6 @@ const dotenv = require('dotenv');
 var mongoose = require('mongoose');
 const CSVToJSON = require("csvtojson");
 
-function logComment(comment) {
-    return {
-        id: comment.commentID,
-        body: comment.body?.substring(0, 30),
-        replyTo: comment.replyTo,
-        actor: comment.actor?.username
-    };
-}
-
 //Input Files
 const actor_inputFile = './input/actors.csv';
 const posts_inputFile = './input/posts.csv';
@@ -189,151 +180,66 @@ async function doPopulate() {
             Takes a while to run because of this.
             *************************/
         }).then(function(result) {
-            return processReplies();
+            console.log(color_start, "Starting to populate post replies...");
+            return new Promise((resolve, reject) => {
+                async.eachSeries(comment_list, async function(new_reply, callback) {
+                        const act = await Actor.findOne({ username: new_reply.actor }).exec();
+                        if (act) {
+                            const pr = await Script.findOne({ postID: new_reply.reply }).exec();
+                            if (pr) {
+                                let comment_detail = {
+                                    commentID: new_reply.id,
+                                    body: new_reply.body,
+                                    likes: new_reply.likes || getLikesComment(),
+                                    unlikes: new_reply.dislikes || getUnlikesComment(),
+                                    actor: act,
+                                    time: new_reply.time ? timeStringToNum(new_reply.time) : null,
+                                    class: new_reply.class,
+
+                                    subcomments: []
+                                };
+
+                                // Is a second-level reply?
+                                if (new_reply.replyTo) {
+                                    const comment = pr.comments.find((comment) => comment.commentID == new_reply.replyTo);
+                                    comment.subcomments.push(comment_detail);
+                                    comment.subcomments.sort(function(a, b) { return b.time - a.time; });
+                                } // Is a parent reply?
+                                else {
+                                    pr.comments.push(comment_detail);
+                                    pr.comments.sort(function(a, b) { return b.time - a.time; });
+                                }
+
+                                try {
+                                    await pr.save();
+                                } catch (err) {
+                                    console.log(color_error, "ERROR: Something went wrong with saving reply in database");
+                                    console.log(err);
+                                    callback(err);
+                                }
+                            } else { //Else no post found
+                                console.log(color_error, "ERROR: Post not found in database");
+                                callback();
+                            }
+                        } else { //Else no actor found
+                            console.log(color_error, "ERROR: Actor not found in database");
+                            console.log(act)
+                        }
+                    },
+                    function(err) {
+                        if (err) {
+                            console.log(color_error, "ERROR: Something went wrong with saving replies in database");
+                        }
+                        // Return response
+                        console.log(color_success, "All replies added to database!");
+                        mongoose.connection.close();
+                        resolve('Promise is resolved successfully.');
+                        return 'Loaded Replies';
+                    }
+                );
+
+            });
         })
-}
-
-// Add helper function for logging
-function logComment(comment) {
-    return {
-        id: comment.commentID,
-        body: comment.body?.substring(0, 30),
-        replyTo: comment.replyTo,
-        actor: comment.actor?.username
-    };
-}
-
-// Add comment processing helper functions
-function processParentComments(comments) {
-    return comments.filter(reply => !reply.replyTo);
-}
-
-function processChildComments(comments) {
-    return comments.filter(reply => reply.replyTo);
-}
-
-// Track comment processing status
-const processedComments = new Map();
-const color_notice = '\x1b[36m%s\x1b[0m'; // cyan
-
-async function processReplies() {
-    return new Promise(async (resolve, reject) => {
-        try {
-            console.log(color_notice, "Starting comment population...");
-            
-            // Sort comments
-            const parentComments = processParentComments(comment_list);
-            const childComments = processChildComments(comment_list);
-            
-            // Process parents first
-            for (const reply of parentComments) {
-                const script = await Script.findOne({ postID: reply.reply });
-                if (!script) continue;
-
-                const act = await Actor.findOne({ username: reply.actor });
-                if (!act) continue;
-
-                const comment = {
-                    commentID: reply.id,
-                    body: reply.body,
-                    likes: reply.likes || 0,
-                    unlikes: reply.dislikes || 0,
-                    actor: act._id,
-                    time: timeStringToNum(reply.time),
-                    class: reply.class,
-                    subcomments: []
-                };
-
-                script.comments.push(comment);
-                await Script.findOneAndUpdate(
-                    { _id: script._id },
-                    { $set: { comments: script.comments } },
-                    { new: true }
-                );
-                console.log(`Added parent ${reply.id}`);
-            }
-
-            // Then process children
-            for (const reply of childComments) {
-                const script = await Script.findOne({ postID: reply.reply });
-                if (!script) continue;
-
-                const act = await Actor.findOne({ username: reply.actor });
-                if (!act) continue;
-
-                const parentComment = script.comments.find(c => c.commentID === parseInt(reply.replyTo));
-                if (!parentComment) continue;
-
-                const childComment = {
-                    commentID: reply.id,
-                    body: reply.body,
-                    likes: reply.likes || 0,
-                    unlikes: reply.dislikes || 0,
-                    actor: act._id,
-                    time: timeStringToNum(reply.time),
-                    class: reply.class,
-                    replyTo: reply.replyTo
-                };
-
-                parentComment.subcomments.push(childComment);
-                await Script.findOneAndUpdate(
-                    { _id: script._id },
-                    { $set: { comments: script.comments } },
-                    { new: true }
-                );
-                console.log(`Added reply ${reply.id} to ${reply.replyTo}`);
-            }
-
-            resolve('Comments populated successfully');
-        } catch (err) {
-            console.error('Error processing replies:', err);
-            reject(err);
-        }
-    });
-}
-
-// Add comment processing function
-async function processComment(reply, parentId) {
-    try {
-        const act = await Actor.findOne({ username: reply.actor });
-        if (!act) {
-            console.log(color_error, `Actor not found: ${reply.actor}`);
-            return;
-        }
-
-        const script = await Script.findOne({ postID: reply.reply });
-        if (!script) {
-            console.log(color_error, `Script not found: ${reply.reply}`);
-            return;
-        }
-
-        const comment = {
-            commentID: reply.id,
-            body: reply.body,
-            likes: reply.likes || 0,
-            unlikes: reply.dislikes || 0,
-            actor: act._id,
-            time: reply.time ? timeStringToNum(reply.time) : null,
-            class: reply.class,
-            replyTo: parentId,
-            subcomments: []
-        };
-
-        if (parentId) {
-            const parentComment = script.comments.find(c => c.commentID === parseInt(parentId));
-            if (parentComment) {
-                parentComment.subcomments.push(comment);
-                console.log(color_success, `Added reply ${comment.commentID} to parent ${parentId}`);
-            }
-        } else {
-            script.comments.push(comment);
-            console.log(color_success, `Added parent comment ${comment.commentID}`);
-        }
-
-        await script.save();
-    } catch (err) {
-        console.log(color_error, `Error processing comment:`, err);
-    }
 }
 
 //capitalize a string
@@ -370,7 +276,7 @@ function getUnlikes() {
     return notRandomNumbers[idx];
 }
 
-//Create a radom number (for likes) with a weighted distrubution
+//Create a random number (for likes) with a weighted distrubution
 //This is for comments
 function getLikesComment() {
     var notRandomNumbers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 3, 4];
