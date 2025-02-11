@@ -271,8 +271,8 @@ a.unlike.red {
 
 /* Add these new rules */
 .comment>.image>a.avatar>img {
-    width: 2.5em !important;
-    height: 2.5em !important;
+    width: 2em !important;
+    height: 2em !important;
     border-radius: 50% !important;
     object-fit: cover !important;
 }
