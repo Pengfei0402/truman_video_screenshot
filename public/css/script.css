@@ -290,3 +290,30 @@ a.unlike.red {
     border-radius: 50% !important;
     object-fit: cover !important;
 }
+
+
+.side-note {
+    position: fixed;
+    right: 0px;
+    top: 0;
+    margin: 0;
+    padding: 15px;
+    width: 250px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 9999;  /* Increased to ensure it's above all elements */
+    color: #333;
+    line-height: 1.5;
+    transform: translateY(0); /* Force top positioning */
+}
+
+/* Override any potential navbar or header interference */
+.ui.message.info.side-note {
+    top: 0 !important;
+    margin-top: 0 !important;
+    margin: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+}

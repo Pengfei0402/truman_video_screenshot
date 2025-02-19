@@ -13,6 +13,8 @@ exports.getStaticVideo = async (req, res) => {
             }
         };
 
+        const sideNote = "After you are done viewing the page, please **return to the survey page** to complete the survey.";
+
         const script = await Script.findOne({
             'postID': 0
             })
@@ -119,7 +121,8 @@ exports.getStaticVideo = async (req, res) => {
             script,
             user: defaultUser,
             title: 'Education Video',
-            disabledFunctionalities: true
+            disabledFunctionalities: true,
+            sideNote
         });
 
     } catch (err) {
