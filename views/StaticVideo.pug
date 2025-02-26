@@ -1,10 +1,12 @@
 extends ui_layout
 
 block content
-  .ui.message.info.side-note
-    p!= sideNote.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  .two.wide.column.centered
   .twelve.wide.column.centered
     include ./partials/StaticActorPost
+  .two.wide.column.centered
+    .ui.message.info.side-note
+      p!= sideNote.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
 
 block styles 
   link(type='text/css', rel='stylesheet', href='/public/css/script.css')

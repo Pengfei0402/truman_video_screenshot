@@ -31,7 +31,7 @@ exports.getStaticVideo = async (req, res) => {
         const speakerParam = req.query.speaker;
 
         // Map parameters to class values
-        let targetClass;
+        let targetClass = "";
         if (moParam) {
             targetClass = parseInt(moParam) - 1; // mo=1,2,3 maps to class=0,1,2
         } else if (emParam) {
