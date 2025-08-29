@@ -28,22 +28,40 @@ exports.getStaticVideo = async (req, res) => {
         // Get URL parameters
         const moParam = req.query.mo;
         const emParam = req.query.em;
+        const emSubParam = req.query.em_sub;
         const speakerParam = req.query.speaker;
+        const offenseParam = req.query.offense; // 'rude' or 'hate'
 
-        // Map parameters to class values
+        // Map parameters to class values for Study 2
         let targetClass;
-        if (moParam) {
-            targetClass = parseInt(moParam) - 1; // mo=1,2,3 maps to class=0,1,2
-        } else if (emParam) {
-            targetClass = parseInt(emParam) + 2; // em=1,2,3 maps to class=3,4,5
+        if (moParam !== undefined) {
+            targetClass = `mo=${moParam}`; // mo=0 or mo=1
+        } else if (emSubParam !== undefined) {
+            targetClass = `em_sub=${emSubParam}`; // em_sub=0 or em_sub=1
+        } else if (emParam !== undefined) {
+            targetClass = `em=${emParam}`; // em=0 or em=1
+        }
+
+        // Filter offensive messages based on offense parameter
+        let targetOffenseClass;
+        if (offenseParam === 'rude') {
+            targetOffenseClass = 'offense_rude';
+        } else if (offenseParam === 'hate') {
+            targetOffenseClass = 'offense_hate';
+        } else {
+            // Default to rude if no offense parameter specified
+            targetOffenseClass = 'offense_rude';
         }
 
         // Filter and modify comments based on class and speaker
         if (script.comments?.length > 0) {
             script.comments = script.comments.map(comment => {
-                if (comment.commentID === 1) {
+                // Determine which offensive comment to process based on offense parameter
+                const targetOffenseCommentID = offenseParam === 'hate' ? 2 : 1;
+                
+                if (comment.commentID === targetOffenseCommentID) {
                     const filteredSubcomments = comment.subcomments.filter(sub => 
-                        sub.class === targetClass.toString()
+                        sub.class === targetClass
                     );
 
                     // Modify actor details based on speaker parameter
@@ -69,6 +87,31 @@ exports.getStaticVideo = async (req, res) => {
                     };
                 }
                 return comment;
+            });
+
+            // Filter offensive comments based on offense parameter
+            script.comments = script.comments.filter(comment => {
+                // Keep all non-offensive comments (regular comments)
+                if (!comment.class || (!comment.class.includes('offense'))) {
+                    return true;
+                }
+                // Only show the selected offensive comment type
+                return comment.class === targetOffenseClass;
+            });
+
+            // Also filter to only show comments relevant to the selected offense
+            const targetOffenseCommentID = offenseParam === 'hate' ? 2 : 1;
+            script.comments = script.comments.filter(comment => {
+                // Keep the main post (commentID 0)
+                if (comment.commentID === 0) {
+                    return true;
+                }
+                // Keep regular comments (3, 4, etc.)
+                if (!comment.class || (!comment.class.includes('offense'))) {
+                    return true;
+                }
+                // Only keep the selected offensive comment
+                return comment.commentID === targetOffenseCommentID;
             });
         }
 

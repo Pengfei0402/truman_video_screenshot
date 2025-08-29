@@ -12,6 +12,9 @@ const dotenv = require('dotenv');
 var mongoose = require('mongoose');
 const CSVToJSON = require("csvtojson");
 
+// Load environment variables FIRST
+dotenv.config({ path: '.env' });
+
 function logComment(comment) {
     return {
         id: comment.commentID,
@@ -21,17 +24,20 @@ function logComment(comment) {
     };
 }
 
-//Input Files
-const actor_inputFile = './input/actors.csv';
-const posts_inputFile = './input/posts.csv';
-const replies_inputFile = './input/replies.csv';
+//Input Files - configurable based on study version
+const inputFolder = process.env.INPUT_FOLDER || './input';
+const actor_inputFile = `${inputFolder}/actors.csv`;
+const posts_inputFile = `${inputFolder}/posts.csv`;
+const replies_inputFile = `${inputFolder}/replies.csv`;
+
+console.log(color_start, `Using input folder: ${inputFolder}`);
+console.log(color_start, `Replies file: ${replies_inputFile}`);
+console.log(color_start, `Study version: ${process.env.STUDY_VERSION || 'not set'}`);
 
 // Variables to be used later.
 var actors_list;
 var posts_list;
 var comment_list;
-
-dotenv.config({ path: '.env' });
 
 /**
  * Connect to MongoDB.
@@ -93,6 +99,8 @@ async function doPopulate() {
                 CSVToJSON().fromFile(replies_inputFile).then(function(json_array) {
                     comment_list = json_array;
                     console.log(color_success, "Finished getting the comment list");
+                    console.log(color_notice, `Loaded ${comment_list.length} comments from ${replies_inputFile}`);
+                    console.log(color_notice, "Comment IDs:", comment_list.map(c => c.id).join(', '));
                     resolve("done");
                 });
             });
@@ -190,7 +198,16 @@ async function doPopulate() {
             *************************/
         }).then(function(result) {
             return processReplies();
-        })
+        }).then(function(result) {
+            console.log(color_success, "Database population completed successfully!");
+            console.log(color_success, "Closing database connection...");
+            mongoose.connection.close();
+            process.exit(0);
+        }).catch(function(error) {
+            console.log(color_error, "ERROR during population:", error);
+            mongoose.connection.close();
+            process.exit(1);
+        });
 }
 
 // Add helper function for logging
