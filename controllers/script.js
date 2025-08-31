@@ -28,7 +28,7 @@ exports.getStaticVideo = async (req, res) => {
         // Get URL parameters
         const moParam = req.query.mo;
         const emParam = req.query.em;
-        const emSubParam = req.query.em_sub;
+        const emSubParam = req.query.sub; // Changed from 'em_sub' to 'sub'
         const speakerParam = req.query.speak; // Changed from 'speaker' to 'speak'
         const offenseParam = req.query.off; // 'ru' (rude) or 'ha' (hate)
 

@@ -19,8 +19,8 @@
 4. `http://localhost:3000/staticvideo?speak=1&off=ru&em=1`
 
 #### **Empathy Subjective (em_sub) Counterspeech:**
-5. `http://localhost:3000/staticvideo?speak=1&off=ru&em_sub=0`
-6. `http://localhost:3000/staticvideo?speak=1&off=ru&em_sub=1`
+5. `http://localhost:3000/staticvideo?speak=1&off=ru&sub=0`
+6. `http://localhost:3000/staticvideo?speak=1&off=ru&sub=1`
 
 ### **Offense Type: HATE** (off=ha)
 
@@ -33,8 +33,8 @@
 10. `http://localhost:3000/staticvideo?speak=1&off=ha&em=1`
 
 #### **Empathy Subjective (em_sub) Counterspeech:**
-11. `http://localhost:3000/staticvideo?speak=1&off=ha&em_sub=0`
-12. `http://localhost:3000/staticvideo?speak=1&off=ha&em_sub=1`
+11. `http://localhost:3000/staticvideo?speak=1&off=ha&sub=0`
+12. `http://localhost:3000/staticvideo?speak=1&off=ha&sub=1`
 
 ---
 
@@ -51,8 +51,8 @@
 16. `http://localhost:3000/staticvideo?speak=2&off=ru&em=1`
 
 #### **Empathy Subjective (em_sub) Counterspeech:**
-17. `http://localhost:3000/staticvideo?speak=2&off=ru&em_sub=0`
-18. `http://localhost:3000/staticvideo?speak=2&off=ru&em_sub=1`
+17. `http://localhost:3000/staticvideo?speak=2&off=ru&sub=0`
+18. `http://localhost:3000/staticvideo?speak=2&off=ru&sub=1`
 
 ### **Offense Type: HATE** (off=ha)
 
@@ -65,8 +65,8 @@
 22. `http://localhost:3000/staticvideo?speak=2&off=ha&em=1`
 
 #### **Empathy Subjective (em_sub) Counterspeech:**
-23. `http://localhost:3000/staticvideo?speak=2&off=ha&em_sub=0`
-24. `http://localhost:3000/staticvideo?speak=2&off=ha&em_sub=1`
+23. `http://localhost:3000/staticvideo?speak=2&off=ha&sub=0`
+24. `http://localhost:3000/staticvideo?speak=2&off=ha&sub=1`
 
 ---
 
