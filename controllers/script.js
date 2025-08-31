@@ -29,7 +29,7 @@ exports.getStaticVideo = async (req, res) => {
         const moParam = req.query.mo;
         const emParam = req.query.em;
         const emSubParam = req.query.em_sub;
-        const speakerParam = req.query.speaker;
+        const speakerParam = req.query.speak; // Changed from 'speaker' to 'speak'
         const offenseParam = req.query.off; // 'ru' (rude) or 'ha' (hate)
 
         // Map parameters to class values for Study 2
