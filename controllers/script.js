@@ -30,7 +30,7 @@ exports.getStaticVideo = async (req, res) => {
         const emParam = req.query.em;
         const emSubParam = req.query.em_sub;
         const speakerParam = req.query.speaker;
-        const offenseParam = req.query.offense; // 'rude' or 'hate'
+        const offenseParam = req.query.off; // 'ru' (rude) or 'ha' (hate)
 
         // Map parameters to class values for Study 2
         let targetClass;
@@ -44,9 +44,9 @@ exports.getStaticVideo = async (req, res) => {
 
         // Filter offensive messages based on offense parameter
         let targetOffenseClass;
-        if (offenseParam === 'rude') {
+        if (offenseParam === 'ru') {
             targetOffenseClass = 'offense_rude';
-        } else if (offenseParam === 'hate') {
+        } else if (offenseParam === 'ha') {
             targetOffenseClass = 'offense_hate';
         } else {
             // Default to rude if no offense parameter specified
@@ -57,7 +57,7 @@ exports.getStaticVideo = async (req, res) => {
         if (script.comments?.length > 0) {
             script.comments = script.comments.map(comment => {
                 // Determine which offensive comment to process based on offense parameter
-                const targetOffenseCommentID = offenseParam === 'hate' ? 2 : 1;
+                const targetOffenseCommentID = offenseParam === 'ha' ? 2 : 1;
                 
                 if (comment.commentID === targetOffenseCommentID) {
                     const filteredSubcomments = comment.subcomments.filter(sub => 
@@ -100,7 +100,7 @@ exports.getStaticVideo = async (req, res) => {
             });
 
             // Also filter to only show comments relevant to the selected offense
-            const targetOffenseCommentID = offenseParam === 'hate' ? 2 : 1;
+            const targetOffenseCommentID = offenseParam === 'ha' ? 2 : 1;
             script.comments = script.comments.filter(comment => {
                 // Keep the main post (commentID 0)
                 if (comment.commentID === 0) {
